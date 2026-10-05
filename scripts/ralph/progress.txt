@@ -1,0 +1,22 @@
+# Ralph Progress Log
+Started: seg 05 out 2026 10:44:23 -03
+---
+## Codebase Patterns
+- Rodar tudo da raiz. Checagem: `python3 -m compileall -q pipeline tests`; testes: `uv run --no-project --with pytest python -m pytest -q` (o Python local nao tem pytest).
+- So stdlib + pytest (a correcao roda sem pandas e sem uv). Dinheiro sempre com decimal.Decimal; arredondar so na escrita com `.quantize(Decimal("0.01"))`.
+- Caminhos vem de `pipeline/join.py`: `RAIZ = Path(__file__).resolve().parent.parent`; reutilize RAIZ/VENDAS/LOJAS em vez de usar o cwd.
+- `pipeline.join.auditoria()` devolve (vendas, linhas_do_join, orfas, lojas_sem_venda) calculados dos CSVs de origem - use isso para citar orfas/loja 108 na pagina, sem digitar numeros a mao.
+- `conftest.py` vazio na raiz poe o repo no sys.path: `from pipeline import x` funciona nos testes com `pytest` e `python -m pytest`.
+- Padrao de teste: fixture `scope="module"` que roda o `main()` da etapa (regenera o entregavel na raiz, deterministico) e depois le o arquivo; stdout capturado com contextlib.redirect_stdout.
+- Os CSVs de origem usam CRLF; csv.writer padrao tambem escreve CRLF, entao os entregaveis seguem o mesmo padrao. Abrir sempre com newline="" e encoding="utf-8".
+- `ralph-run.log` (raiz) e o log do laco em andamento: nao commitar.
+---
+
+## 2026-10-05 - US-001
+- Implementado o inner join de vendas.csv x lojas.csv por id_loja -> vendas_lojas.csv (420 linhas, receita 931274.06), com auditoria impressa: 423 lidas, 420 no join, 3 orfas (V00421, V00422, V00423; R$ 8120.00), loja sem venda 108 Batel.
+- Arquivos: pipeline/__init__.py, pipeline/join.py, tests/test_join.py (7 testes), conftest.py (raiz), vendas_lojas.csv (entregavel), scripts/ralph/prd.json.
+- **Learnings for future iterations:**
+  - join.py expoe funcoes reutilizaveis: ler_csv, inner_join, soma_receita, auditoria, alem das constantes RAIZ/VENDAS/LOJAS/SAIDA/CENTAVO.
+  - Somar receita com Decimal(str) e exato: a soma do join bate 931274.06 sem tolerancia; orfas somam Decimal("8120") -> quantize da "8120.00".
+  - pivot (US-002) deve ler vendas_lojas.csv (join.SAIDA), nao os CSVs de origem; o mes e data[:7].
+---

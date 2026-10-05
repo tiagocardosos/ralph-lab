@@ -10,6 +10,7 @@ Started: seg 05 out 2026 10:44:23 -03
 - Padrao de teste: fixture `scope="module"` que roda o `main()` da etapa (regenera o entregavel na raiz, deterministico) e depois le o arquivo; stdout capturado com contextlib.redirect_stdout.
 - Os CSVs de origem usam CRLF; csv.writer padrao tambem escreve CRLF, entao os entregaveis seguem o mesmo padrao. Abrir sempre com newline="" e encoding="utf-8".
 - `ralph-run.log` (raiz) e o log do laco em andamento: nao commitar.
+- Cada etapa expoe constantes `ENTRADA`/`SAIDA` (Path absoluto) e um `main()` que imprime linhas `[etapa] ...`. O fixture de teste de uma etapa roda os `main()` das etapas anteriores antes do seu, para nao depender da ordem dos testes nem de arquivo velho na raiz.
 ---
 
 ## 2026-10-05 - US-001
@@ -19,4 +20,14 @@ Started: seg 05 out 2026 10:44:23 -03
   - join.py expoe funcoes reutilizaveis: ler_csv, inner_join, soma_receita, auditoria, alem das constantes RAIZ/VENDAS/LOJAS/SAIDA/CENTAVO.
   - Somar receita com Decimal(str) e exato: a soma do join bate 931274.06 sem tolerancia; orfas somam Decimal("8120") -> quantize da "8120.00".
   - pivot (US-002) deve ler vendas_lojas.csv (join.SAIDA), nao os CSVs de origem; o mes e data[:7].
+---
+
+## 2026-10-05 - US-002
+- Implementado o pivot regiao x mes: pipeline/pivot.py le vendas_lojas.csv (join.SAIDA) e grava pivot_receita.csv com cabecalho regiao,2026-01..2026-06, 4 regioes em ordem alfabetica, valores com 2 casas. Total 931274.06 (exato), Sudeste 265077.49. Saida deterministica (mesmo sha256 em duas execucoes).
+- Arquivos: pipeline/pivot.py, tests/test_pivot.py (6 testes; suite com 13), pivot_receita.csv (entregavel), scripts/ralph/prd.json, scripts/ralph/progress.txt.
+- **Learnings for future iterations:**
+  - pivot.py expoe `pivotar(linhas) -> (meses, {regiao: {mes: Decimal}})`, alem de ENTRADA/SAIDA. Meses e regioes saem dos dados (sorted), nao estao fixos no codigo; celula sem venda vira 0.00.
+  - A pagina (US-003) deve ler pivot_receita.csv (pivot.SAIDA) com csv.reader: linha 0 = cabecalho (meses em [1:]), demais = [regiao, valores...]. Converter com Decimal e formatar BRL (R$ 265.077,49) so na escrita.
+  - Somar o pivot com Decimal da exatamente 931274.06, sem precisar da tolerancia de +- 0.50.
+  - Orfas/loja 108 para a conclusao da pagina: use join.auditoria() (o pivot nao guarda essa informacao).
 ---

@@ -87,7 +87,7 @@
         "uv run --no-project --with pytest python -m pytest -q passa"
       ],
       "priority": 5,
-      "passes": false,
+      "passes": true,
       "notes": "Aberta depois da rodada 1: o proprio agente admitiu na US-003 que duas cores tinham baixo contraste no fundo claro e compensou com rotulo direto e tabela, mas deixou o defeito na entrega. Para elementos graficos a WCAG 1.4.11 pede 3:1."
     }
   ]

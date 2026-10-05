@@ -72,6 +72,42 @@ def test_conclusao_cita_numeros_e_o_que_ficou_de_fora(conclusao):
     assert "loja 108 Batel" in conclusao
 
 
+def luminancia(cor):
+    """Luminancia relativa WCAG 2.x de '#rrggbb'."""
+    canais = [int(cor[i:i + 2], 16) / 255 for i in (1, 3, 5)]
+    r, g, b = [c / 12.92 if c <= 0.04045 else ((c + 0.055) / 1.055) ** 2.4 for c in canais]
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b
+
+
+def razao_contraste(a, b):
+    claro, escuro = sorted([luminancia(a), luminancia(b)], reverse=True)
+    return (claro + 0.05) / (escuro + 0.05)
+
+
+def test_cores_das_series_com_contraste_3_para_1(execucao):
+    pagina_html, _ = execucao
+    estilo = re.search(r"<style>(.*?)</style>", pagina_html, re.S).group(1)
+    claro, escuro = estilo.split("@media (prefers-color-scheme: dark)")
+    for modo, bloco in [("claro", claro), ("escuro", escuro)]:
+        cores = dict(re.findall(r"--(superficie|serie-\d+):\s*(#[0-9a-fA-F]{6});", bloco))
+        series = [cores[f"serie-{n}"] for n in range(1, 5)]
+        assert len({c.lower() for c in series}) == 4, modo
+        for n, cor in enumerate(series, 1):
+            razao = razao_contraste(cor, cores["superficie"])
+            assert razao >= 3.0, f"{modo}: --serie-{n} {cor} tem {razao:.2f}:1"
+
+
+def test_regiao_mantem_a_mesma_serie_na_linha_legenda_e_tabela(execucao):
+    pagina_html, _ = execucao
+    for n, regiao in enumerate(["Centro-Oeste", "Nordeste", "Sudeste", "Sul"], 1):
+        var = rf'style="--cor: var\(--serie-{n}\)"'
+        assert re.search(rf'class="chave-linha" {var}[^>]*/><text[^>]*>{regiao}</text>',
+                         pagina_html)
+        assert re.search(rf'<g class="serie" {var}>(?:(?!</g>).)*>{regiao}</text>',
+                         pagina_html, re.S)
+        assert re.search(rf'<span class="chave" {var}></span>{regiao}</th>', pagina_html)
+
+
 def test_numeros_nao_digitados_no_codigo():
     fonte = Path(pagina.__file__).read_text(encoding="utf-8")
     for numero in ["265077", "265.077", "931274", "931.274", "8120", "8.120"]:

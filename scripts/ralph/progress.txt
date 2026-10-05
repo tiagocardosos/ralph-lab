@@ -13,6 +13,7 @@ Started: seg 05 out 2026 10:44:23 -03
 - Cada etapa expoe constantes `ENTRADA`/`SAIDA` (Path absoluto) e um `main()` que imprime linhas `[etapa] ...`. O fixture de teste de uma etapa roda os `main()` das etapas anteriores antes do seu, para nao depender da ordem dos testes nem de arquivo velho na raiz.
 - Nada de numero de conferencia (265077, 931274, 8120...) escrito em pipeline/pagina.py, nem em docstring/exemplo: tests/test_pagina.py le o fonte e falha se achar. Formatacao BRL: `pagina.brl(Decimal)` -> "R$ 265.077,49".
 - Verificacao no navegador: o Playwright MCP bloqueia `file:`; sirva a raiz com `python3 -m http.server 8765 --bind 127.0.0.1` em background. Screenshots so podem ir para dentro do repo (`.playwright-mcp/`, ja no .gitignore). Screenshot de elemento perde o :hover - confira hover com browser_evaluate (`el.matches(':hover')`).
+- Cores do grafico: toda entrada de `pagina.CORES` (claro, escuro) precisa de contraste >= 3:1 contra --superficie nos dois modos (tests/test_pagina.py le o <style> do index.html gerado e confere). Ao trocar cor, rode o validate_palette.js da skill dataviz nos dois modos (adjacente para linhas) e so use hex documentados da paleta da skill.
 ---
 
 ## 2026-10-05 - US-001
@@ -56,4 +57,17 @@ Started: seg 05 out 2026 10:44:23 -03
   - `python -m pipeline` so acha o pacote com o cwd na raiz (ou PYTHONPATH); por isso o subprocesso do teste usa cwd=join.RAIZ. As etapas em si resolvem caminhos por __file__ e nao dependem do cwd.
   - Para conferir "nenhum byte muda", compare sha256 dos entregaveis entre duas execucoes; `git status --short` limpo depois de `python3 -m pipeline` tambem confirma que os commitados estao atualizados.
   - Todas as historias do prd.json estao com passes: true.
+---
+
+## 2026-10-05 - US-005
+- Contraste minimo de 3:1 nas linhas do grafico: em pipeline/pagina.py, CORES passou a ter so cores que passam de 3:1 contra --superficie nos dois modos. Sudeste (--serie-3) manteve o tom aqua, mas usa o tom escuro documentado #199e70 tambem no claro (2,74 -> 3,32:1). Sul (--serie-4) virou violeta #4a3aa7 / escuro #9085e9 (2,11 -> 8,33:1 no claro; 5,57:1 no escuro). Centro-Oeste e Nordeste nao mudaram (4,30 e 3,12:1 no claro). A ordem regiao -> --serie-N continua a mesma.
+- Por que violeta e nao amarelo mais escuro: nenhum tom amarelo documentado na skill dataviz passa de 3:1 no claro (#c98500 da 2,99), e escurecer o amarelo mantendo o matiz (#c28308) faz ele quase colidir com o laranja do Nordeste (deltaE normal 9,9 < 15; CVD 2,0). Com blue/orange/aqua/violet, validate_palette.js passa todas as checagens no adjacente nos dois modos (pior CVD 8,4 claro / 9,4 escuro) e, no claro, ate no all-pairs. CORES ficou com 5 entradas (+ vermelho #e34948/#e66767); amarelo e magenta sairam porque ficam abaixo de 3:1 no claro.
+- tests/test_pagina.py: +2 testes (suite com 25). Um le --superficie e --serie-1..4 dos blocos claro e escuro do <style> do index.html gerado, calcula o contraste pela luminancia relativa WCAG 2.x, falha abaixo de 3.0 e confere que as 4 cores sao diferentes entre si. O outro confere que regiao -> --serie-N e o mesmo na legenda, na linha e na tabela. O teste falhou antes da correcao (claro: --serie-3 #1baf7a tem 2.74:1) e passou depois.
+- index.html regenerado com python3 -m pipeline (3 linhas de CSS mudaram); vendas_lojas.csv e pivot_receita.csv sem nenhum byte de diferenca; duas execucoes dao o mesmo sha256.
+- Verificado no navegador (Playwright MCP + http.server): claro e escuro com as 4 linhas visiveis e distintas; legenda, rotulos e tabela com as mesmas cores das linhas (getComputedStyle). Unico erro de console: 404 do favicon. Screenshots em .playwright-mcp/us005-claro.png e us005-escuro.png (ignorados pelo git).
+- Arquivos: pipeline/pagina.py, tests/test_pagina.py, index.html, scripts/ralph/prd.json, scripts/ralph/progress.txt.
+- **Learnings for future iterations:**
+  - validate_palette.js exporta `validate(paleta, {mode, pairs})` e `contrast(a, b)`. Para testar candidatas, rode um .mjs dentro da pasta scripts/ da skill (o import e relativo) e apague o arquivo depois.
+  - Para linhas a skill exige so pares adjacentes, mas aqui as linhas se cruzam; vale olhar o all-pairs como desempate. Sul fica bem abaixo das outras linhas, entao o par azul x violeta (proximo no all-pairs escuro) nao se toca na pratica.
+  - Rotulo direto e tabela nao dispensam o 3:1 neste projeto: o PRD pede o contraste na propria cor da linha.
 ---

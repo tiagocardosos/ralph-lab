@@ -14,14 +14,15 @@ MESES = ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "
 
 # Paleta categorica (claro, escuro) validada com o validate_palette.js da skill
 # dataviz. A regiao pega o slot pela posicao no pivot (ordem alfabetica), nunca
-# pelo ranking; os slots nao sao reciclados.
+# pelo ranking; os slots nao sao reciclados. Toda cor tem contraste >= 3:1
+# (WCAG 1.4.11) contra --superficie nos dois modos, por isso a ordem difere da
+# paleta padrao da skill: o aqua usa o tom escuro (#199e70) tambem no claro, e
+# o amarelo (nenhum tom documentado passa de 3:1 no claro; escurecido, vira
+# laranja) e o magenta ficam de fora - o violeta assume o slot 4.
 CORES = [
     ("#2a78d6", "#3987e5"),
     ("#eb6834", "#d95926"),
-    ("#1baf7a", "#199e70"),
-    ("#eda100", "#c98500"),
-    ("#e87ba4", "#d55181"),
-    ("#008300", "#008300"),
+    ("#199e70", "#199e70"),
     ("#4a3aa7", "#9085e9"),
     ("#e34948", "#e66767"),
 ]

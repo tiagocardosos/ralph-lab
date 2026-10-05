@@ -54,7 +54,7 @@
         "uv run --no-project --with pytest python -m pytest -q passa"
       ],
       "priority": 3,
-      "passes": false,
+      "passes": true,
       "notes": ""
     },
     {

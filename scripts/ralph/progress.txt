@@ -11,6 +11,8 @@ Started: seg 05 out 2026 10:44:23 -03
 - Os CSVs de origem usam CRLF; csv.writer padrao tambem escreve CRLF, entao os entregaveis seguem o mesmo padrao. Abrir sempre com newline="" e encoding="utf-8".
 - `ralph-run.log` (raiz) e o log do laco em andamento: nao commitar.
 - Cada etapa expoe constantes `ENTRADA`/`SAIDA` (Path absoluto) e um `main()` que imprime linhas `[etapa] ...`. O fixture de teste de uma etapa roda os `main()` das etapas anteriores antes do seu, para nao depender da ordem dos testes nem de arquivo velho na raiz.
+- Nada de numero de conferencia (265077, 931274, 8120...) escrito em pipeline/pagina.py, nem em docstring/exemplo: tests/test_pagina.py le o fonte e falha se achar. Formatacao BRL: `pagina.brl(Decimal)` -> "R$ 265.077,49".
+- Verificacao no navegador: o Playwright MCP bloqueia `file:`; sirva a raiz com `python3 -m http.server 8765 --bind 127.0.0.1` em background. Screenshots so podem ir para dentro do repo (`.playwright-mcp/`, ja no .gitignore). Screenshot de elemento perde o :hover - confira hover com browser_evaluate (`el.matches(':hover')`).
 ---
 
 ## 2026-10-05 - US-001
@@ -30,4 +32,17 @@ Started: seg 05 out 2026 10:44:23 -03
   - A pagina (US-003) deve ler pivot_receita.csv (pivot.SAIDA) com csv.reader: linha 0 = cabecalho (meses em [1:]), demais = [regiao, valores...]. Converter com Decimal e formatar BRL (R$ 265.077,49) so na escrita.
   - Somar o pivot com Decimal da exatamente 931274.06, sem precisar da tolerancia de +- 0.50.
   - Orfas/loja 108 para a conclusao da pagina: use join.auditoria() (o pivot nao guarda essa informacao).
+---
+
+## 2026-10-05 - US-003
+- Implementada a pagina: pipeline/pagina.py le pivot_receita.csv (pivot.SAIDA) e grava index.html na raiz, arquivo unico: grafico de linhas em <svg> inline (4 regioes, legenda no SVG, meses jan/26..jun/26 no eixo x, rotulo no fim de cada linha, eixo y 0..50.000 com passo redondo calculado), tabela com os mesmos numeros + totais, e <p class="conclusao"> de 575 caracteres. Sem <script> e sem CSS externo (so <style> inline); hover so com CSS (mira vertical) + <title> nativo listando as 4 regioes do mes.
+- Conclusao 100% calculada: total R$ 931.274,06, lider Sudeste R$ 265.077,49 (28,5%), ranking, melhor mes, 3 orfas (V00421, V00422 e V00423; id_loja 999; R$ 8.120,00) e loja 108 Batel (Sul/PR) sem venda -> Sul com vendas de 1 das 2 lojas. Orfas/loja vem de join.auditoria().
+- Paleta: slots 1-4 da paleta categorica da skill dataviz, validada com validate_palette.js (claro e escuro passam; aqua/amarelo < 3:1 no claro -> rotulos diretos + tabela). Modo escuro via prefers-color-scheme.
+- Verificado no navegador (Playwright MCP via http.server local): claro, escuro e hover ok; unico erro de console e o 404 do favicon do servidor de teste. dev-browser nao estava disponivel; usei o Playwright.
+- Saida deterministica: mesmo sha256 do index.html em duas execucoes.
+- Arquivos: pipeline/pagina.py, tests/test_pagina.py (7 testes; suite com 20), index.html (entregavel), .gitignore (.playwright-mcp/), scripts/ralph/prd.json, scripts/ralph/progress.txt.
+- **Learnings for future iterations:**
+  - pagina.py expoe ler_pivot, numero, brl, rotulo_mes, juntar, passo_eixo, grafico, tabela_html, conclusao. index.html e gravado com newline="\n" (LF), diferente dos CSVs (CRLF).
+  - US-004: pipeline/__main__.py so precisa chamar join.main(), pivot.main(), pagina.main() em ordem; os tres ja sao deterministicos. Os numeros do README (423 -> 420, R$ 8.120,00, loja 108) estao no stdout de join.main() e na conclusao da pagina.
+  - Teste de ponta a ponta com subprocess: rodar `[sys.executable, "-m", "pipeline"]` com cwd=join.RAIZ (a correcao nao tem uv; sys.executable e o Python que roda o pytest).
 ---

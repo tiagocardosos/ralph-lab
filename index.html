@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Receita mensal por região</title>
+<style>
+:root {
+  color-scheme: light dark;
+  --plano: #f9f9f7; --superficie: #fcfcfb; --borda: rgba(11,11,11,0.10);
+  --tinta: #0b0b0b; --tinta-2: #52514e; --tinta-3: #898781;
+  --grade: #e1e0d9; --eixo: #c3c2b7;
+  --serie-1: #2a78d6;
+  --serie-2: #eb6834;
+  --serie-3: #1baf7a;
+  --serie-4: #eda100;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --plano: #0d0d0d; --superficie: #1a1a19; --borda: rgba(255,255,255,0.10);
+    --tinta: #ffffff; --tinta-2: #c3c2b7; --tinta-3: #898781;
+    --grade: #2c2c2a; --eixo: #383835;
+    --serie-1: #3987e5;
+    --serie-2: #d95926;
+    --serie-3: #199e70;
+    --serie-4: #c98500;
+  }
+}
+body { margin: 0; background: var(--plano); color: var(--tinta);
+  font: 16px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif; }
+main { max-width: 820px; margin: 0 auto; padding: 32px 20px 48px; }
+h1 { font-size: 1.6rem; margin: 0 0 4px; }
+.subtitulo, .nota { color: var(--tinta-2); margin: 0; }
+.nota { font-size: 0.85rem; margin-top: 24px; }
+figure { margin: 24px 0; padding: 16px; background: var(--superficie);
+  border: 1px solid var(--borda); border-radius: 8px; }
+svg { display: block; width: 100%; height: auto; }
+svg text { fill: var(--tinta-3); font-size: 12px; font-variant-numeric: tabular-nums; }
+svg .legenda text, svg .rotulo { fill: var(--tinta-2); }
+.grade line { stroke: var(--grade); stroke-width: 1; }
+.eixo { stroke: var(--eixo); stroke-width: 1; }
+.serie polyline, .chave-linha { fill: none; stroke: var(--cor); stroke-width: 2;
+  stroke-linejoin: round; stroke-linecap: round; }
+.serie circle { fill: var(--cor); stroke: var(--superficie); stroke-width: 2; }
+.coluna rect { fill: transparent; }
+.coluna line { stroke: var(--tinta-3); stroke-width: 1; opacity: 0; }
+.coluna:hover line, .coluna:focus line { opacity: 1; }
+.coluna:focus { outline: none; }
+table { width: 100%; border-collapse: collapse; font-size: 0.9rem;
+  font-variant-numeric: tabular-nums; }
+caption { text-align: left; color: var(--tinta-2); padding-bottom: 8px; }
+th, td { padding: 6px 8px; border-bottom: 1px solid var(--grade); text-align: right; }
+th:first-child { text-align: left; white-space: nowrap; }
+tfoot th, tfoot td { font-weight: 600; border-bottom: none; }
+.chave { display: inline-block; width: 16px; height: 2px; margin-right: 8px;
+  vertical-align: middle; background: var(--cor); }
+.conclusao { margin: 24px 0 0; }
+</style>
+</head>
+<body>
+<main>
+<h1>Receita mensal por região</h1>
+<p class="subtitulo">Vendas de jan/26 a jun/26, em R$, a partir do inner join de vendas.csv com lojas.csv.</p>
+<figure>
+<svg viewBox="0 0 760 380" role="img" aria-labelledby="grafico-titulo grafico-desc">
+<title id="grafico-titulo">Receita mensal por região (R$)</title>
+<desc id="grafico-desc">Gráfico de linhas com 4 regiões de jan/26 a jun/26; os valores estão na tabela abaixo.</desc>
+<g class="legenda">
+<line class="chave-linha" style="--cor: var(--serie-1)" x1="64" y1="16" x2="84" y2="16"/><text x="90" y="20">Centro-Oeste</text>
+<line class="chave-linha" style="--cor: var(--serie-2)" x1="204" y1="16" x2="224" y2="16"/><text x="230" y="20">Nordeste</text>
+<line class="chave-linha" style="--cor: var(--serie-3)" x1="344" y1="16" x2="364" y2="16"/><text x="370" y="20">Sudeste</text>
+<line class="chave-linha" style="--cor: var(--serie-4)" x1="484" y1="16" x2="504" y2="16"/><text x="510" y="20">Sul</text>
+</g>
+<g class="grade">
+<line x1="64" y1="344.0" x2="648" y2="344.0"/><text x="56" y="348.0" text-anchor="end">0</text>
+<line x1="64" y1="284.8" x2="648" y2="284.8"/><text x="56" y="288.8" text-anchor="end">10.000</text>
+<line x1="64" y1="225.6" x2="648" y2="225.6"/><text x="56" y="229.6" text-anchor="end">20.000</text>
+<line x1="64" y1="166.4" x2="648" y2="166.4"/><text x="56" y="170.4" text-anchor="end">30.000</text>
+<line x1="64" y1="107.2" x2="648" y2="107.2"/><text x="56" y="111.2" text-anchor="end">40.000</text>
+<line x1="64" y1="48.0" x2="648" y2="48.0"/><text x="56" y="52.0" text-anchor="end">50.000</text>
+</g>
+<line class="eixo" x1="64" y1="344.0" x2="648" y2="344.0"/>
+<text x="64.0" y="366" text-anchor="middle">jan/26</text>
+<text x="180.8" y="366" text-anchor="middle">fev/26</text>
+<text x="297.6" y="366" text-anchor="middle">mar/26</text>
+<text x="414.4" y="366" text-anchor="middle">abr/26</text>
+<text x="531.2" y="366" text-anchor="middle">mai/26</text>
+<text x="648.0" y="366" text-anchor="middle">jun/26</text>
+<g class="serie" style="--cor: var(--serie-1)">
+<polyline points="64.0,82.7 180.8,58.5 297.6,97.2 414.4,114.0 531.2,67.7 648.0,114.7"/>
+<circle cx="64.0" cy="82.7" r="4"/>
+<circle cx="180.8" cy="58.5" r="4"/>
+<circle cx="297.6" cy="97.2" r="4"/>
+<circle cx="414.4" cy="114.0" r="4"/>
+<circle cx="531.2" cy="67.7" r="4"/>
+<circle cx="648.0" cy="114.7" r="4"/>
+<text class="rotulo" x="658.0" y="118.7">Centro-Oeste</text>
+</g>
+<g class="serie" style="--cor: var(--serie-2)">
+<polyline points="64.0,70.4 180.8,59.6 297.6,72.6 414.4,83.2 531.2,134.6 648.0,93.5"/>
+<circle cx="64.0" cy="70.4" r="4"/>
+<circle cx="180.8" cy="59.6" r="4"/>
+<circle cx="297.6" cy="72.6" r="4"/>
+<circle cx="414.4" cy="83.2" r="4"/>
+<circle cx="531.2" cy="134.6" r="4"/>
+<circle cx="648.0" cy="93.5" r="4"/>
+<text class="rotulo" x="658.0" y="97.5">Nordeste</text>
+</g>
+<g class="serie" style="--cor: var(--serie-3)">
+<polyline points="64.0,79.0 180.8,56.6 297.6,132.0 414.4,70.0 531.2,100.8 648.0,56.4"/>
+<circle cx="64.0" cy="79.0" r="4"/>
+<circle cx="180.8" cy="56.6" r="4"/>
+<circle cx="297.6" cy="132.0" r="4"/>
+<circle cx="414.4" cy="70.0" r="4"/>
+<circle cx="531.2" cy="100.8" r="4"/>
+<circle cx="648.0" cy="56.4" r="4"/>
+<text class="rotulo" x="658.0" y="60.4">Sudeste</text>
+</g>
+<g class="serie" style="--cor: var(--serie-4)">
+<polyline points="64.0,180.0 180.8,196.1 297.6,228.1 414.4,208.0 531.2,195.4 648.0,192.1"/>
+<circle cx="64.0" cy="180.0" r="4"/>
+<circle cx="180.8" cy="196.1" r="4"/>
+<circle cx="297.6" cy="228.1" r="4"/>
+<circle cx="414.4" cy="208.0" r="4"/>
+<circle cx="531.2" cy="195.4" r="4"/>
+<circle cx="648.0" cy="192.1" r="4"/>
+<text class="rotulo" x="658.0" y="196.1">Sul</text>
+</g>
+<g class="coluna" tabindex="0"><title>jan/26
+R$ 44.144,42 · Centro-Oeste
+R$ 46.222,85 · Nordeste
+R$ 44.767,33 · Sudeste
+R$ 27.703,36 · Sul</title><rect x="64.0" y="48" width="58.4" height="296"/><line x1="64.0" y1="48" x2="64.0" y2="344"/></g>
+<g class="coluna" tabindex="0"><title>fev/26
+R$ 48.227,94 · Centro-Oeste
+R$ 48.042,96 · Nordeste
+R$ 48.544,11 · Sudeste
+R$ 24.985,87 · Sul</title><rect x="122.4" y="48" width="116.8" height="296"/><line x1="180.8" y1="48" x2="180.8" y2="344"/></g>
+<g class="coluna" tabindex="0"><title>mar/26
+R$ 41.682,96 · Centro-Oeste
+R$ 45.850,70 · Nordeste
+R$ 35.816,56 · Sudeste
+R$ 19.584,52 · Sul</title><rect x="239.2" y="48" width="116.8" height="296"/><line x1="297.6" y1="48" x2="297.6" y2="344"/></g>
+<g class="coluna" tabindex="0"><title>abr/26
+R$ 38.855,88 · Centro-Oeste
+R$ 44.053,04 · Nordeste
+R$ 46.281,64 · Sudeste
+R$ 22.976,51 · Sul</title><rect x="356.0" y="48" width="116.8" height="296"/><line x1="414.4" y1="48" x2="414.4" y2="344"/></g>
+<g class="coluna" tabindex="0"><title>mai/26
+R$ 46.672,07 · Centro-Oeste
+R$ 35.371,50 · Nordeste
+R$ 41.083,43 · Sudeste
+R$ 25.094,42 · Sul</title><rect x="472.8" y="48" width="116.8" height="296"/><line x1="531.2" y1="48" x2="531.2" y2="344"/></g>
+<g class="coluna" tabindex="0"><title>jun/26
+R$ 38.740,70 · Centro-Oeste
+R$ 42.321,71 · Nordeste
+R$ 48.584,42 · Sudeste
+R$ 25.665,16 · Sul</title><rect x="589.6" y="48" width="58.4" height="296"/><line x1="648.0" y1="48" x2="648.0" y2="344"/></g>
+</svg>
+</figure>
+<table>
+<caption>Receita por região e mês (R$)</caption>
+<thead><tr><th>Região</th><th>jan/26</th><th>fev/26</th><th>mar/26</th><th>abr/26</th><th>mai/26</th><th>jun/26</th><th>Total</th></tr></thead>
+<tbody>
+<tr><th scope="row"><span class="chave" style="--cor: var(--serie-1)"></span>Centro-Oeste</th><td>44.144,42</td><td>48.227,94</td><td>41.682,96</td><td>38.855,88</td><td>46.672,07</td><td>38.740,70</td><td>258.323,97</td></tr>
+<tr><th scope="row"><span class="chave" style="--cor: var(--serie-2)"></span>Nordeste</th><td>46.222,85</td><td>48.042,96</td><td>45.850,70</td><td>44.053,04</td><td>35.371,50</td><td>42.321,71</td><td>261.862,76</td></tr>
+<tr><th scope="row"><span class="chave" style="--cor: var(--serie-3)"></span>Sudeste</th><td>44.767,33</td><td>48.544,11</td><td>35.816,56</td><td>46.281,64</td><td>41.083,43</td><td>48.584,42</td><td>265.077,49</td></tr>
+<tr><th scope="row"><span class="chave" style="--cor: var(--serie-4)"></span>Sul</th><td>27.703,36</td><td>24.985,87</td><td>19.584,52</td><td>22.976,51</td><td>25.094,42</td><td>25.665,16</td><td>146.009,84</td></tr>
+</tbody>
+<tfoot><tr><th>Total</th><td>162.837,96</td><td>169.800,88</td><td>142.934,74</td><td>152.167,07</td><td>148.221,42</td><td>155.311,99</td><td>931.274,06</td></tr></tfoot>
+</table>
+<p class="conclusao">Entre jan/26 e jun/26, a receita do relatório somou R$ 931.274,06. O Sudeste lidera o semestre com R$ 265.077,49 (28,5% do total); na sequência vêm Nordeste (R$ 261.862,76), Centro-Oeste (R$ 258.323,97) e Sul (R$ 146.009,84). O melhor mês de uma região foi jun/26 no Sudeste, com R$ 48.584,42. Ficaram fora desse total as 3 vendas órfãs (V00421, V00422 e V00423), com id_loja 999 inexistente em lojas.csv, que somam R$ 8.120,00. Já a loja 108 Batel (Sul/PR) não registrou nenhuma venda: o Sul tem vendas de só 1 das 2 lojas cadastradas e aparece menor do que a operação real.</p>
+<p class="nota">Gerado por pipeline/pagina.py a partir de pivot_receita.csv.</p>
+</main>
+</body>
+</html>

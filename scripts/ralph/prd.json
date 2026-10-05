@@ -1,0 +1,77 @@
+{
+  "project": "ralph-lab",
+  "branchName": "ralph/pipeline-vendas",
+  "description": "Pipeline de vendas do CSV ao grafico (exercicio ia-3.1). Entradas na raiz do repo: vendas.csv (423 vendas: id_venda,data,id_loja,categoria,unidades,receita_brl) e lojas.csv (8 lojas: id_loja,nome_loja,regiao,uf,gerente). Entregaveis NA RAIZ do repo, com estes nomes exatos: vendas_lojas.csv (inner join por id_loja, 420 linhas, soma de receita_brl = 931274.06), pivot_receita.csv (cabecalho exato regiao,2026-01,2026-02,2026-03,2026-04,2026-05,2026-06; 4 linhas x 7 colunas; soma 931274.06; Sudeste 265077.49) e index.html (grafico SVG inline da receita mensal por regiao + um <p> de conclusao com 300+ caracteres). Armadilhas dos dados que devem ser tratadas e reportadas, nunca escondidas: 3 vendas orfas V00421-V00423 com id_loja=999 (R$ 8120.00, ficam fora do inner join) e a loja 108 Batel/PR (Sul) sem nenhuma venda (some do pivot). CRITERIO DE PRONTO: a suite pytest em tests/test_*.py inteira verde, com pelo menos 4 testes (linhas do join, receita total, forma do pivot, grafico na pagina). RESTRICOES: so biblioteca padrao do Python + pytest (a correcao roda `python -m pytest` num Python SEM pandas e sem uv); nao editar nem apagar linhas de vendas.csv e lojas.csv; nao inventar dados - todo numero de saida e calculado dos CSVs; ler receita_brl como numero com decimal.Decimal (vem como 349.5, 1200, 4406.88). COMANDOS, sempre da raiz do repo: checagem `python3 -m compileall -q pipeline tests`; testes `uv run --no-project --with pytest python -m pytest -q` (o Python local nao tem pytest instalado). O prd.json e o progress.txt do Ralph ficam em scripts/ralph/.",
+  "userStories": [
+    {
+      "id": "US-001",
+      "title": "Inner join de vendas e lojas em vendas_lojas.csv",
+      "description": "Como analista, quero vendas_lojas.csv com cada venda enriquecida com os dados da loja, para analisar a receita por regiao.",
+      "acceptanceCriteria": [
+        "pipeline/__init__.py existe e pipeline/join.py define main() que le vendas.csv e lojas.csv da raiz do repo, com caminhos resolvidos a partir de Path(__file__) e nao do cwd",
+        "Grava vendas_lojas.csv na raiz com o cabecalho id_venda,data,id_loja,categoria,unidades,receita_brl,nome_loja,regiao,uf, na mesma ordem de vendas.csv",
+        "A coluna se chama exatamente receita_brl e o valor e copiado de vendas.csv sem alteracao",
+        "vendas_lojas.csv tem 420 linhas de dados, nenhuma com id_loja 999, e a soma de receita_brl com Decimal e 931274.06",
+        "main() imprime a auditoria: 423 vendas lidas, 420 no join, 3 orfas descartadas (V00421, V00422, V00423; R$ 8120.00) e a loja sem venda (108 Batel)",
+        "vendas.csv e lojas.csv continuam com 423 e 8 linhas de dados (nao sao modificados)",
+        "tests/test_join.py cobre: 420 linhas, soma 931274.06, ausencia de id_loja 999 e fontes intactas",
+        "python3 -m compileall -q pipeline tests passa",
+        "uv run --no-project --with pytest python -m pytest -q passa"
+      ],
+      "priority": 1,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "US-002",
+      "title": "Pivot de receita por regiao x mes em pivot_receita.csv",
+      "description": "Como analista, quero pivot_receita.csv com a receita de cada regiao em cada mes, para comparar as regioes ao longo do semestre.",
+      "acceptanceCriteria": [
+        "pipeline/pivot.py define main() que le vendas_lojas.csv (nao os CSVs de origem) e grava pivot_receita.csv na raiz",
+        "Cabecalho exato: regiao,2026-01,2026-02,2026-03,2026-04,2026-05,2026-06 (mes = data[:7])",
+        "4 linhas de dados em ordem alfabetica: Centro-Oeste, Nordeste, Sudeste, Sul",
+        "Valores com ponto decimal e exatamente 2 casas (ex.: 265077.49), sem R$ e sem separador de milhar; somas com Decimal, arredondadas so na escrita",
+        "A soma de todas as celulas numericas e 931274.06 (+- 0.50) e a soma da linha Sudeste e 265077.49",
+        "tests/test_pivot.py cobre: cabecalho exato, forma 4 x 7, total 931274.06 e Sudeste 265077.49",
+        "python3 -m compileall -q pipeline tests passa",
+        "uv run --no-project --with pytest python -m pytest -q passa"
+      ],
+      "priority": 2,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "US-003",
+      "title": "Pagina index.html com grafico SVG e conclusao",
+      "description": "Como gestor, quero abrir index.html e ver a receita mensal de cada regiao num grafico, com uma conclusao escrita, para entender o semestre sem abrir planilha.",
+      "acceptanceCriteria": [
+        "pipeline/pagina.py define main() que le pivot_receita.csv e grava index.html na raiz",
+        "Pagina de arquivo unico: grafico de linhas em <svg> inline (uma linha por regiao, legenda, meses no eixo x), sem <script src> e sem CSS externo",
+        "Um <p> de conclusao com pelo menos 300 caracteres e numeros calculados dos dados: regiao lider (Sudeste, R$ 265.077,49), receita total do relatorio (R$ 931.274,06) e o que ficou de fora - as 3 vendas orfas (R$ 8.120,00) e a loja 108 Batel sem vendas",
+        "tests/test_pagina.py cobre: index.html existe, contem <svg, tem um <p> com 300+ caracteres e cita Sudeste",
+        "Verificar no navegador com a skill dev-browser; se ela nao estiver disponivel, registrar no progress.txt que a verificacao visual manual e necessaria (nao bloqueia a historia)",
+        "python3 -m compileall -q pipeline tests passa",
+        "uv run --no-project --with pytest python -m pytest -q passa"
+      ],
+      "priority": 3,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "US-004",
+      "title": "Orquestracao com python3 -m pipeline e README da decisao de join",
+      "description": "Como mantenedor, quero rodar o pipeline inteiro com um comando e ler no README qual join foi usado e o que ele descartou.",
+      "acceptanceCriteria": [
+        "pipeline/__main__.py roda join, pivot e pagina nessa ordem; python3 -m pipeline regenera os tres entregaveis e rodar duas vezes nao muda nenhum byte",
+        "README.md na raiz explica como rodar, como testar, o inner join escolhido e os numeros da auditoria: 423 -> 420 linhas; 3 orfas e R$ 8.120,00 fora; loja 108 ausente do pivot, entao o Sul aparece menor que a operacao real",
+        "Um teste de ponta a ponta em tests/ roda python3 -m pipeline num subprocesso e confere que os tres arquivos existem",
+        "A suite inteira tem pelo menos 4 testes e todos passam",
+        "python3 -m compileall -q pipeline tests passa",
+        "uv run --no-project --with pytest python -m pytest -q passa"
+      ],
+      "priority": 4,
+      "passes": false,
+      "notes": ""
+    }
+  ]
+}

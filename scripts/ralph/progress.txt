@@ -46,3 +46,14 @@ Started: seg 05 out 2026 10:44:23 -03
   - US-004: pipeline/__main__.py so precisa chamar join.main(), pivot.main(), pagina.main() em ordem; os tres ja sao deterministicos. Os numeros do README (423 -> 420, R$ 8.120,00, loja 108) estao no stdout de join.main() e na conclusao da pagina.
   - Teste de ponta a ponta com subprocess: rodar `[sys.executable, "-m", "pipeline"]` com cwd=join.RAIZ (a correcao nao tem uv; sys.executable e o Python que roda o pytest).
 ---
+
+## 2026-10-05 - US-004
+- Implementada a orquestracao: pipeline/__main__.py chama join.main(), pivot.main() e pagina.main() em ordem; `python3 -m pipeline` regenera os tres entregaveis. Duas execucoes seguidas dao o mesmo sha256 nos tres arquivos, identicos aos ja commitados (git status limpo nos entregaveis).
+- README.md na raiz: tabela das etapas, como rodar (pipeline inteiro e cada etapa com `python3 -m pipeline.<etapa>`), como testar, a decisao do inner join por id_loja e a auditoria (423 -> 420; 3 orfas V00421-V00423 com R$ 8.120,00 fora; loja 108 Batel ausente do pivot, Sul menor que a operacao real).
+- tests/test_ponta_a_ponta.py (3 testes; suite com 23): roda `[sys.executable, "-m", "pipeline"]` com cwd=join.RAIZ duas vezes num fixture de modulo; confere os tres arquivos na raiz, a ordem das etapas pelo prefixo `[etapa]` do stdout e que a segunda execucao nao muda nenhum byte (sha256) nem o stdout.
+- Arquivos: pipeline/__main__.py, tests/test_ponta_a_ponta.py, README.md, scripts/ralph/prd.json, scripts/ralph/progress.txt.
+- **Learnings for future iterations:**
+  - `python -m pipeline` so acha o pacote com o cwd na raiz (ou PYTHONPATH); por isso o subprocesso do teste usa cwd=join.RAIZ. As etapas em si resolvem caminhos por __file__ e nao dependem do cwd.
+  - Para conferir "nenhum byte muda", compare sha256 dos entregaveis entre duas execucoes; `git status --short` limpo depois de `python3 -m pipeline` tambem confirma que os commitados estao atualizados.
+  - Todas as historias do prd.json estao com passes: true.
+---
